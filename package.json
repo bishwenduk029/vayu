@@ -1,0 +1,46 @@
+{
+  "name": "vayu",
+  "version": "1.0.0",
+  "source": "src/index.js",
+  "bin": {
+    "vayu": "dist/index.esm.js"
+  },
+  "author": "bishwenduk029",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build:css": "./scripts/css/build.js",
+    "build": "NODE_ENV=prod && rm -rf dist && bili --no-babelrc --format esm --minify",
+    "watch": "yarn build && onchange 'src/*.js' -- yarn build",
+    "test:unit": "jest"
+  },
+  "dependencies": {
+    "@tailwindcss/typography": "^0.4.1",
+    "esbuild": "^0.12.15",
+    "fs-extra": "^10.0.0",
+    "gray-matter": "^4.0.3",
+    "micromark": "^3.0.0",
+    "module-from-string": "^2.3.0",
+    "node-dir": "^0.1.17",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "sucrase": "^3.20.0",
+    "tiny-glob": "^0.2.9",
+    "yargs": "^17.0.1"
+  },
+  "devDependencies": {
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+    "@babel/preset-react": "^7.14.5",
+    "@fullhuman/postcss-purgecss": "^4.0.3",
+    "autoprefixer": "^10.3.1",
+    "bili": "^5.0.5",
+    "cssnano": "^5.0.6",
+    "jest": "^27.0.6",
+    "onchange": "^7.1.0",
+    "postcss": "^8.3.5",
+    "postcss-cli": "^8.3.1",
+    "purgecss": "^4.0.3",
+    "rollup-plugin-jsx": "^1.0.3",
+    "tailwindcss": "^2.2.4"
+  }
+}
