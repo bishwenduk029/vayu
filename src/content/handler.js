@@ -5,7 +5,7 @@ import { ConvertHrtime } from "../utils/helper.js";
 import path from "path";
 import { parseMarkdown } from "./resolver";
 import DefaultApp from "../layout/main";
-import buildRenderPipeline from "../render/index.js";
+import getRenderPipeline from "../render/index.js";
 import { renderView } from "../render/jsx/index.js";
 
 export async function processRequest(pagesContext, req, layoutFolder) {
@@ -37,39 +37,11 @@ async function renderPage(props, layoutFolder) {
 
 export async function buildStaticPages(mdFiles, layoutFolder) {
   const startTime = process.hrtime();
-  const renderPipeline = buildRenderPipeline();
+  const renderPipeline = getRenderPipeline();
 
   await Promise.all(
     mdFiles.map(async (file) => {
-      const props = await parseMarkdown(file);
-
-      // In case there is no layout in customer environment then use the default view shipped in here.
-      if (!props.data.layout) {
-        Log.warn(
-          "Oops could not find layout in content to render with, so using default"
-        );
-        Log.verbose(`The content file ${file}`);
-
-        if (layoutFolder) {
-          const view = await renderPipeline.execute(
-            path.resolve(layoutFolder, "index.jsx"),
-            props
-          );
-          await serializeViewToFile(view, file);
-          return;
-        }
-
-        const view = await renderView(DefaultApp, props);
-        await serializeViewToFile(view, file);
-        return;
-      }
-
-      // Use the customer layout for rendering the views.
-      const view = await renderPipeline.execute(
-        path.resolve(layoutFolder, props.data.layout),
-        props
-      );
-      await serializeViewToFile(view, file);
+      await renderContentFile(file, layoutFolder, renderPipeline);
     })
   );
   Log.info(
@@ -77,7 +49,43 @@ export async function buildStaticPages(mdFiles, layoutFolder) {
   );
 }
 
-async function serializeViewToFile(view, sourceFile) {
+export async function renderContentFile(
+  contentFile,
+  layoutFolder,
+  renderPipeline
+) {
+  const props = await parseMarkdown(contentFile);
+
+  // In case there is no layout in customer environment then use the default view shipped in here.
+  if (!props.data.layout) {
+    Log.warn(
+      "Oops could not find layout in content to render with, so using default"
+    );
+    Log.verbose(`The content file ${contentFile}`);
+
+    if (layoutFolder) {
+      const view = await renderPipeline.execute(
+        path.resolve(layoutFolder, "index.jsx"),
+        props
+      );
+      await serializeViewToFile(view, contentFile);
+      return;
+    }
+
+    const view = await renderView(DefaultApp, props);
+    await serializeViewToFile(view, contentFile);
+    return view;
+  }
+
+  // Use the customer layout for rendering the views.
+  const view = await renderPipeline.execute(
+    path.resolve(layoutFolder, props.data.layout),
+    props
+  );
+  await serializeViewToFile(view, contentFile);
+}
+
+export async function serializeViewToFile(view, sourceFile) {
   const sourceFolder = process.cwd();
   const destinationFolder = `${sourceFolder}/public`;
   const { name } = path.parse(sourceFile);

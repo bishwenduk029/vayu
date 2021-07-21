@@ -4,6 +4,7 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import log from "./logging.js";
 import { startApp, startBuilding } from "./main.js";
+import startDevServer from "./dev";
 
 const AMBA_PORT = "3000";
 
@@ -55,4 +56,16 @@ yargs(hideBin(process.argv))
     alias: "v",
     type: "boolean",
     description: "Run with verbose logging",
-  }).argv;
+  })
+  .command(
+    "dev",
+    "Live build your website",
+    () => {},
+    (argv) => {
+      if (argv.verbose) {
+        log.verboseMode = true;
+      }
+      process.env["NODE_ENV"] = "development";
+      startDevServer();
+    }
+  ).argv;
