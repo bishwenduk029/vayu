@@ -31,10 +31,10 @@ function RenderPipeline() {
   return { push, execute };
 }
 
-const buildRenderPipeline = () => {
+const getRenderPipeline = () => {
   const pipeline = RenderPipeline();
   pipeline.push(renderJSX);
   return pipeline;
 };
 
-export default buildRenderPipeline;
+export default getRenderPipeline;
