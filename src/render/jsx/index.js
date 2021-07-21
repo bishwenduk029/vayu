@@ -8,13 +8,15 @@ import { ConvertHrtime } from "../../utils/helper";
 
 const TEMPLATE_CACHE = new Map();
 
-async function dynamicImport(layoutFile) {
+export async function dynamicImport(layoutFile) {
   const startTime = process.hrtime();
   const absPathForLayout = path.resolve(layoutFile);
   Log.verbose(`Processing layout ${absPathForLayout}`);
 
-  if (TEMPLATE_CACHE.has(absPathForLayout)) {
-    return TEMPLATE_CACHE.get(absPathForLayout);
+  if (process.env.NODE_ENV === "production") {
+    if (TEMPLATE_CACHE.has(absPathForLayout)) {
+      return TEMPLATE_CACHE.get(absPathForLayout);
+    }
   }
 
   try {
@@ -49,7 +51,7 @@ async function bundleJSX(absPathForLayout) {
 
 export async function renderView(app, props) {
   const element = React.createElement(app, props);
-  const response = await ReactDOMServer.renderToStaticMarkup(element);
+  const response = await ReactDOMServer.renderToString(element);
   return response;
 }
 

@@ -49,28 +49,32 @@ export async function buildStaticPages(mdFiles, layoutFolder) {
   );
 }
 
-async function renderContentFile(file, layoutFolder, renderPipeline) {
-  const props = await parseMarkdown(file);
+export async function renderContentFile(
+  contentFile,
+  layoutFolder,
+  renderPipeline
+) {
+  const props = await parseMarkdown(contentFile);
 
   // In case there is no layout in customer environment then use the default view shipped in here.
   if (!props.data.layout) {
     Log.warn(
       "Oops could not find layout in content to render with, so using default"
     );
-    Log.verbose(`The content file ${file}`);
+    Log.verbose(`The content file ${contentFile}`);
 
     if (layoutFolder) {
       const view = await renderPipeline.execute(
         path.resolve(layoutFolder, "index.jsx"),
         props
       );
-      await serializeViewToFile(view, file);
+      await serializeViewToFile(view, contentFile);
       return;
     }
 
     const view = await renderView(DefaultApp, props);
-    await serializeViewToFile(view, file);
-    return;
+    await serializeViewToFile(view, contentFile);
+    return view;
   }
 
   // Use the customer layout for rendering the views.
@@ -78,10 +82,10 @@ async function renderContentFile(file, layoutFolder, renderPipeline) {
     path.resolve(layoutFolder, props.data.layout),
     props
   );
-  await serializeViewToFile(view, file);
+  await serializeViewToFile(view, contentFile);
 }
 
-async function serializeViewToFile(view, sourceFile) {
+export async function serializeViewToFile(view, sourceFile) {
   const sourceFolder = process.cwd();
   const destinationFolder = `${sourceFolder}/public`;
   const { name } = path.parse(sourceFile);
