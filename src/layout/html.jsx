@@ -2,7 +2,7 @@ import React from "react";
 
 const HTML = (props) => {
   return (
-    <html lang="en" {...props.htmlAttributes}>
+    <html lang="en" {...props.htmlAttributes} hidden>
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="x-ua-compatible" content="ie=edge" />
@@ -14,21 +14,10 @@ const HTML = (props) => {
         <title>{props.title}</title>
         <meta name="description" content={props.description} />
         <meta name="image" content={props.image} />
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/tailwindcss@^1.5/dist/base.min.css"
-        />
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/tailwindcss@^1.5/dist/components.min.css"
-        />
+        <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
         <link
           rel="stylesheet"
           href="https://unpkg.com/@tailwindcss/typography@0.2.x/dist/typography.min.css"
-        />
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/tailwindcss@^1.5/dist/utilities.min.css"
         />
       </head>
       <body {...props.bodyAttributes}>
