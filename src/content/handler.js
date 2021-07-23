@@ -7,6 +7,7 @@ import { parseMarkdown } from "./resolver";
 import DefaultApp from "../layout/main";
 import getRenderPipeline from "../render/index.js";
 import { renderView } from "../render/jsx/index.js";
+import { findContentFiles } from "./index.js";
 
 export async function processRequest(pagesContext, req, layoutFolder) {
   const normalizedPathname = normalizePathname(req.url);
@@ -35,13 +36,23 @@ async function renderPage(props, layoutFolder) {
   }
 }
 
-export async function buildStaticPages(mdFiles, layoutFolder) {
+export async function buildStaticPages(vayuConfig) {
   const startTime = process.hrtime();
+  const contentFiles = await findContentFiles(
+    vayuConfig.contentPattern,
+    vayuConfig.contentFolder
+  );
+  Log.info(`Found ${contentFiles.length} content files to build site`);
+  if (!contentFiles.length) {
+    throw new Error(
+      `No content files found matching the pattern ${vayuConfig.contentPattern}`
+    );
+  }
   const renderPipeline = getRenderPipeline();
 
   await Promise.all(
-    mdFiles.map(async (file) => {
-      await renderContentFile(file, layoutFolder, renderPipeline);
+    contentFiles.map(async (contentFile) => {
+      await renderContentFile(contentFile, vayuConfig.theme, renderPipeline);
     })
   );
   Log.info(
@@ -49,40 +60,46 @@ export async function buildStaticPages(mdFiles, layoutFolder) {
   );
 }
 
-export async function renderContentFile(
-  contentFile,
-  layoutFolder,
-  renderPipeline
-) {
+export async function renderContentFile(contentFile, theme, renderPipeline) {
   const props = await parseMarkdown(contentFile);
 
-  // In case there is no layout in customer environment then use the default view shipped in here.
+  // In case there is no layout in content then use the default view shipped in here.
   if (!props.data.layout) {
     Log.warn(
       "Oops could not find layout in content to render with, so using default"
     );
     Log.verbose(`The content file ${contentFile}`);
 
-    if (layoutFolder) {
+    if (theme) {
       const view = await renderPipeline.execute(
-        path.resolve(layoutFolder, "index.jsx"),
+        path.join(theme, "index.jsx"),
         props
       );
       await serializeViewToFile(view, contentFile);
+      if (process.env.NODE_ENV === "development") {
+        return view;
+      }
       return;
     }
 
     const view = await renderView(DefaultApp, props);
     await serializeViewToFile(view, contentFile);
-    return view;
+    if (process.env.NODE_ENV === "development") {
+      return view;
+    }
+    return;
   }
 
-  // Use the customer layout for rendering the views.
+  // Use the content specific layout for rendering the views.
   const view = await renderPipeline.execute(
-    path.resolve(layoutFolder, props.data.layout),
+    path.join(theme, props.data.layout),
     props
   );
   await serializeViewToFile(view, contentFile);
+  if (process.env.NODE_ENV === "development") {
+    return view;
+  }
+  return;
 }
 
 export async function serializeViewToFile(view, sourceFile) {

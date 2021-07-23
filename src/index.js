@@ -5,6 +5,7 @@ import { hideBin } from "yargs/helpers";
 import log from "./logging.js";
 import { startApp, startBuilding } from "./main.js";
 import startDevServer from "./dev";
+import Log from "./logging.js";
 
 const AMBA_PORT = "3000";
 
@@ -35,23 +36,22 @@ yargs(hideBin(process.argv))
     "build",
     "build website",
     () => {},
-    (argv) => {
+    async (argv) => {
       if (argv.verbose) {
         log.verboseMode = true;
       }
-      const contentFolder = path.resolve(process.cwd());
-      let layoutFolder = path.resolve(process.cwd(), "./layout");
-      if (argv.theme) {
-        layoutFolder = argv.theme;
+      let vayuConfig = {};
+      try {
+        vayuConfig = await import(
+          path.resolve(process.cwd(), "vayu.config.js")
+        );
+      } catch (error) {
+        Log.verbose("No config file present for Vayu");
+        vayuConfig = {};
       }
-      startBuilding(contentFolder, layoutFolder);
+      startBuilding(vayuConfig);
     }
   )
-  .option("theme", {
-    alias: "t",
-    type: "string",
-    description: "Provide the theme folder to use for rendering the site",
-  })
   .option("verbose", {
     alias: "v",
     type: "boolean",

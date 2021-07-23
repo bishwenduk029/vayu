@@ -6,6 +6,9 @@ import { ConvertHrtime } from "./utils/helper";
 import findFiles from "./finders";
 
 const MARKDOWN_FILE_PATTERN = "**/*.md";
+const defaultVayuConfig = {
+  contentPattern: "**/*.md",
+};
 
 const buildHandler = async (source, pattern, layoutFolder) => {
   try {
@@ -49,20 +52,23 @@ export const startApp = async (port, contentFolder, layoutFolder) => {
   }
 };
 
-export const startBuilding = async (contentFolder, layoutFolder) => {
+export const startBuilding = async (vayuConfig) => {
   try {
-    log.info(`Processing content from directory ${contentFolder}`);
-    const mdFiles = await findFiles(MARKDOWN_FILE_PATTERN, contentFolder);
-    log.info(`Found ${mdFiles.length} content files to build site`);
-    if (mdFiles.length) {
-      await buildStaticPages(mdFiles, layoutFolder);
-      log.done("Your website is ready");
-      return;
+    vayuConfig = {
+      ...defaultVayuConfig,
+      ...vayuConfig,
+    };
+    if (!vayuConfig.contentFolder) {
+      vayuConfig.contentFolder = process.cwd();
     }
-    log.error("No markdown files found.");
+    log.info(`Processing content from directory ${vayuConfig.contentFolder}`);
+
+    await buildStaticPages(vayuConfig);
+
+    log.done("Your website is ready");
   } catch (error) {
     log.error("Building site failed");
     log.error(error);
-    console.log(error.stack);
+    log.error(error.stack);
   }
 };
