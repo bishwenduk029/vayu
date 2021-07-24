@@ -1,0 +1,160 @@
+<html lang="en" data-reactroot=""><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="ie=edge"/><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/><title></title><meta name="description"/><meta name="image"/><link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" type="text/css"/></head><body><noscript>This site runs best with JavaScript enabled.</noscript><div id="___vayu"><main class="p-8"><article class="prose lg:prose-xl mx-auto max-w-6xl"><h1>PRPC-Plaform Project Guide</h1>
+<p>This repository contains the rules, code, &amp; schema for the base platform.</p>
+<ul>
+<li><a href="docs/README.html">Platform developer documentation</a></li>
+<li>Projects
+<ul>
+<li><a href="infrastructure/README.html">infrastructure</a></li>
+<li><a href="infrastructure/deployment/sde/sde">SDE Deployment</a> (infrastructure/deployment/sde/sde)</li>
+</ul>
+</li>
+</ul>
+<h2>ALM Tools Access</h2>
+<p>Developers new to Pega, please see <a href="https://mesh.pega.com/docs/DOC-145555">Using Engineering ALM Tools</a> for gaining access to ALM Tools such as Bitbucket, Jenkins, and Artifactory.</p>
+<h2>Prerequisites</h2>
+<p>To run the examples below you need java, git and docker. The prerequisite section of <a href="https://mesh.pega.com/docs/DOC-113230">SSOT Local Developer Enablement Training</a> provides some good guidance on getting setup. Also note, the examples use linux, for windows add '.bat', for example 'gradlew.bat'.</p>
+<p>For a more comprehensive directory of engineering documents, check out &quot;<a href="https://mesh.pega.com/docs/DOC-95811">Pega Engineering Documentation - Start Here</a>&quot;.</p>
+<h2>Launching Pega 7</h2>
+<h3>From sources</h3>
+<p>You can launch the Pega 7 application from the sources of this project by first launching the docker database and then launching tomcat.</p>
+<pre><code>$ ./sync-db
+$ ./run-web
+</code></pre>
+<p>After the first step, you will have a database running the latest rules from your workspace. The second step will launch tomcat on port 1080.</p>
+<p>See <a href="web-launch.html">Launching a local Pega Web (Infinity) Node</a> for additional details and options!</p>
+<h3>What if I want to bring my own database rather than the standard docker db?</h3>
+<p>You must like pain! All kidding aside, just add -Pprconfig=&lt;full-path-to-prconfig&gt;. For example:</p>
+<pre><code># Sync my special database with rules from git.
+$ ./sync-db -Pprconfig=/home/vagrant/special-prconfig.xml
+</code></pre>
+<p>or</p>
+<pre><code># Start the web container using special prconfig.xml.
+$ ./run-web -Pprconfig=/home/vagrant/special-prconfig.xml
+</code></pre>
+<h3>What if I want to work and develop offline?</h3>
+<p>For more information about working with <code>--offline</code>, see <a href="docs/gettingStarted/offlineDevelopment.html">offlineDevelopment.md</a>.</p>
+<h2>Working with the docker database</h2>
+<p>There are a number of options for working with the local postgres database. See <a href="db/README.html">db/README.md</a> for full details. It is worth mentioning here that the options work together with the other facilities like rule syncing and launching tomcat.</p>
+<p>For example, to launch a second database with a different container name and database port you would use:</p>
+<pre><code>$ ./gradlew db:up -PdbPort=5432 -PjobKey=hotfix
+</code></pre>
+<p>Now, you can launch a tomcat against that database using:</p>
+<pre><code>$ ./run-web -PdbPort=5432 -PjobKey=hotfix
+</code></pre>
+<h2>Building the full PRPC distribution</h2>
+<p>Build the full <a href="infrastructure/distribution/PRPC">PRPC distribution</a> completely from local source.  This is a <em>very</em> long running process.</p>
+<pre><code class="language-bash">./build-prpc
+</code></pre>
+<p>You can provide additional options for gradle, for example:</p>
+<pre><code class="language-bash"># Skip running test task and use an alternate artifactory URL
+./build-prpc -x test -PartifactoryURL=http://meshbinhyd.pega.com:8081/artifactory
+</code></pre>
+<p><strong>DO NOT PASS IN <code>-PdbPort=&lt;port&gt;</code> AND/OR <code>-PjobKey=&lt;key&gt;</code> TO THIS COMMAND, IT WILL CAUSE A FAILURE</strong></p>
+<p>You can get additional information about the command by running</p>
+<pre><code class="language-bash">./build-prpc --help
+</code></pre>
+<h2>Building locally generated coreAssembly</h2>
+<p>To generate a coreAssembly distribution use the following command:</p>
+<pre><code>./build-core-assembly
+</code></pre>
+<p>You can provide additional options for gradle, for example:</p>
+<pre><code># Skip running test task and use an alternate artifactory URL
+./build-core-assembly -x test -PartifactoryURL=http://meshbinhyd.pega.com:8081/artifactory
+</code></pre>
+<p>Once completed, the resultant coreAssembly distribution will be located at ./infrastructure/distribution/coreAssembly/build/libs/coreAssembly-0.0.1-SNAPSHOT.zip</p>
+<h2>Running integration tests</h2>
+<p>Integration tests are now enabled as part of pipeline builds.
+To enable integration tests of a particular module to be run as part of pipeline PR process, follow the below steps :-</p>
+<ol>
+<li>Create a suite class that would consist of all test classes which need to be run as part of the ReadyToShare validation.</li>
+<li>The class created should start with <code>ReadyToShare</code> as pipeline would search for classes starting this name and run all the test suites mentioned in the class.</li>
+<li>Make sure that class name should be same as that of the java file which contains this class. Failure to do so would result in compilation failures.</li>
+<li>Sample format and other details can be found here :- https://mesh.pega.com/docs/DOC-134531</li>
+</ol>
+<p>To run integration tests dependant on S3 or any other AWS resources</p>
+<ul>
+<li>AWSAccessKey, AWSSecretAccessKey and AWSRegion are being made available in the tests as System properties</li>
+<li>These credentials can be accessed in a test as shown here :
+<code>String accessKey = System.getProperty(&quot;accessKey&quot;)</code></li>
+</ul>
+<h3>Running integTests locally</h3>
+<p>To run integration tests present in all modules,</p>
+<p><code>gradlew integTest</code></p>
+<p>To run integration tests which are run as part of pipeline,</p>
+<p><code>gradlew integTest --tests *ReadyToShare*</code></p>
+<p>To run integration tests particular to a module, for instance</p>
+<p><code>gradlew :platform:kernel:search:integtest</code></p>
+<p>To run integration tests dependant on any AWS resources,</p>
+<ol>
+<li>
+<p>Get the temporary credentials as mentioned here : https://mesh.pega.com/docs/DOC-111675</p>
+</li>
+<li>
+<p>Pass the credentials(accessKey, secretAccessKey and the sessionToken) and region(optional) as parameters to access AWS resources in the tests. For example,
+<code>gradlew integTest --tests=*ReaadyToShare* -PacccessKey=accessKeyValue -PsecretAccessKey=secretAccessKeyValue -PsessionToken=sessionTokenValue -Pregion=regionValue</code></p>
+</li>
+</ol>
+<p>To run integration tests that depend on Azure Storage account,</p>
+<p><code>gradlew integTest --tests=*ReaadyToShare* -PazureStorageAccountName=&lt;name&gt; -PazureStorageAccountKey=&lt;key&gt;</code></p>
+<p><code>azureStorageAccountName</code> &amp; <code>azureStorageAccountKey</code> will be accessible from test through system properties</p>
+<p>Reach out to Integration teams if you need more information on tests that use Azure Storage account</p>
+<h2>Running rulesync</h2>
+<p>The most common operation for rulesync, syncing rules to the database, is coverted by the wrapper shell scripts <code>sync-db</code> and <code>destroy-and-sync-db</code>.</p>
+<ul>
+<li><em>sync-db</em> will attempt to sync the rules from git to your docker db</li>
+<li><em>destroy-and-sync-db</em> will first <em>destroy</em> your current docker db, launch a fresh db and then perform sync</li>
+</ul>
+<p>For details on those scripts, run them with the '--help' option.</p>
+<p>For a more comprehensive list of gradle tasks for syncing, see <a href="tools/prrulesync/README-gradlecommands.html">tools/prrulesync/README-gradlecommands.md</a></p>
+<h2>Dependency versions &amp; Repos</h2>
+<p>Library dependencies (CI &amp; PRs will <strong>fail</strong> in release branches if issues are detected starting in release/8.5)</p>
+<ul>
+<li>You should always use specific versions like <code>1.0.0</code></li>
+<li>You should not use -SNAPSHOT versions like <code>1.0.0-SNAPSHOT</code></li>
+<li>You should not use changing versions like <code>1.0+</code> or <code>+</code></li>
+<li>You should not use version ranges like <code>[1.0,)</code></li>
+</ul>
+<p>Repositories (CI &amp; PRs will <strong>fail</strong> in release branches if issues are detected starting in release/8.5)</p>
+<ul>
+<li>Gradle repositories must come form our internal artifactory</li>
+<li>You should not use maven central, jcenter, or any other maven/ivy repo i nyour gradle scripts</li>
+</ul>
+<p>See the <a href="https://git.pega.io/projects/PP/repos/gradle-prpc-platform-plugins/browse/projects/build-info-plugin">verifyDependencies task in the build-info plugin</a> for more details</p>
+<h2>Other useful tasks</h2>
+<h3>Platform Developer Metrics Collection</h3>
+<p>By default gradle will collect and report performance/environment metrics for local developer(through the use of the <a href="https://github.com/nebula-plugins/gradle-metrics-plugin">nebula gradle-metrics-plugin</a>).</p>
+<p>The metrics being collected include the following:</p>
+<ul>
+<li>Info - Gradle start parameters, system properties, environment variables, and SCM information.</li>
+<li>Project - Project name and version used</li>
+<li>Events - Configuration, dependency resolution, and task execution</li>
+<li>Tasks - List of tasks executed and the time taken by each task.</li>
+<li>Tests - Number of tests executed and elapsed time per test.</li>
+<li>Result - The result of the tasks executed by the user.</li>
+</ul>
+<p>The collected metrics are then automatically posted to an Elasticsearch instance located <a href="http://benchmark-elk.eng.pega.com:9200">here</a> which is configured in the gradle.properties file.</p>
+<p>The metrics can then be viewed using <a href="http://benchmark-elk.eng.pega.com:5601/goto/be5e7da9ed6dc8c9e5b18004df50ad57">this Kibana instance with pre-configured columns</a>.</p>
+<p>To disable this behavior simply set the <code>metricsEnabled</code> property to <code>false</code> in the root <a href="gradle.properties">gradle.properties</a> file.</p>
+<p>NOTE: The underyling <a href="https://github.com/nebula-plugins/gradle-metrics-plugin">nebula gradle-metrics-plugin</a> currently outputs a benign stacktrace for a NoSumeMethodError after posting the results, this stack trace will NOT cause a build failure and can be ignored.</p>
+<p>Example queries can be found at <a href="gradle/docs/gradleBuildMetricsESQueries.html">gradle/docs/gradleBuildMetricsESQueries.md</a></p>
+<h3>Code builds</h3>
+<p>To build the code:</p>
+<pre><code># build code including running unit tests
+$ ./gradlew build
+
+# build without running unit tests
+$ ./gradlew build -x test
+</code></pre>
+<p>By default we build the core projects. You can build more or less with some additional options. See <a href="settings.gradle">settings.gradle</a> for full set of options.</p>
+<pre><code>-PbuildForPRPC=true          Include auxiliary modules such as bix, ResourceKit, that are needed for PRPC Assembly but not earlier; and javadocs, needed for docs but not for coreAssembly
+-PbuildTools=false           Exclude projects under dev/tools
+-PincludeTestProjects=false  Exclude test projects
+-PbuildAll=true              Sets flags to include all the above options in the build. Does not yet include rules.
+-PeclipseCompiler=true       Use eclipse compiler for building projects, important for hot code replace when using eclipse.
+</code></pre>
+<h3>Apply schema</h3>
+<p>You can apply the latest database schema to your database with this command:</p>
+<pre><code>$ ./gradlew applyDDL
+</code></pre>
+<h3>Load jars</h3>
+<p>See <a href="./docs/gettingStarted/syncJars.html">how to sync jars to your pega database.</a></p></article></main></div></body></html>

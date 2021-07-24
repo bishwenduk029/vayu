@@ -7,7 +7,7 @@ export const ConvertHrtime = (
   elapsedTime /*: number[] | number */
 ) /*: number | string */ => {
   if (Array.isArray(elapsedTime)) {
-    return (elapsedTime[0] + elapsedTime[1] / 1000000).toFixed(3);
+    return (elapsedTime[0] + elapsedTime[1] / 1e9).toFixed(3);
   } else {
     return elapsedTime;
   }

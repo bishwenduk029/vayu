@@ -1,0 +1,16 @@
+{
+  "name": "layout",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "author": "bishwenduk029",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "scripts": {
+    "dev": "rm -rf public && ../../dist/index.esm.js dev",
+    "build": "rm -rf public && ../../dist/index.esm.js build"
+  }
+}

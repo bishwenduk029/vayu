@@ -4,66 +4,76 @@ import normalizePath from "normalize-path";
 import Log from "../logging";
 import path from "path";
 import { renderContentFile } from "../content/handler";
-import { startBuilding } from "../main";
-import getRenderPipeline from "../render";
-import { renderView } from "../render/jsx";
+import { setupVayuConfig, startBuilding } from "../content";
+import { renderView } from "../transformers/jsx";
 import DevPage from "../layout/devPage";
 import url from "fast-url-parser";
 
 const VAYU_DEV_SERVER = "VAYU_DEV_SERVER";
 
-const pipeline = getRenderPipeline();
-
-const dev = async () => {
+const dev = async (vayuConfig) => {
   const browsersync = BS.create(VAYU_DEV_SERVER);
   browsersync
     .watch(["**/*.jsx", "**/*.md"], {
       ignored: ["node_modules", /(^|[\/\\])\../],
     })
     .on("change", async (file) => {
+      Log.info(`File change detected for ${file}`);
       browsersync.reload();
     });
 
-  await startBuilding(process.cwd());
+  await startBuilding(vayuConfig);
+  vayuConfig = await setupVayuConfig(vayuConfig);
+  const serveHandler = await devServeHandlerBuilder(vayuConfig);
 
   Log.info(`Watching for changes`);
 
   browsersync.init({
-    server: path.join(process.cwd(), "public"),
+    server: path.resolve(process.cwd(), vayuConfig.dest),
     logLevel: "silent",
     host: "127.0.0.1",
-    port: 8080,
-    middleware: [devServeHandler],
+    port: vayuConfig.dev.port || 3000,
+    middleware: [serveHandler],
   });
 };
 
-const devServeHandler = async (req, res, next) => {
-  let stats = null;
-  let view = null;
-  let absolutePath = path.join(
-    process.cwd(),
-    decodeURIComponent(url.parse(req.url).pathname)
-  );
-  if (req.url === "/") {
-    absolutePath = process.cwd();
-  }
-  try {
-    stats = await fs.lstat(absolutePath);
-  } catch (err) {
-    if (absolutePath.indexOf(".html") !== -1) {
-      absolutePath = absolutePath.split(".html").join(".md");
+const normalizeUrlPath = (urlPath) => {
+  return urlPath.replace(/^\//, "");
+};
+
+const devServeHandlerBuilder = async (vayuConfig) => {
+  const devServeHandler = async (req, res, next) => {
+    let stats = null;
+    let view = null;
+    let normalizePathName = normalizeUrlPath(
+      decodeURIComponent(url.parse(req.url).pathname)
+    );
+    let absolutePath = path.resolve(process.cwd(), normalizePathName);
+    try {
+      Log.verbose(`Rendering in dev mode file: ${absolutePath}`);
       stats = await fs.lstat(absolutePath);
-    } else {
+    } catch (err) {
+      Log.verbose(
+        `File ${absolutePath} does not exist in ${vayuConfig.contentFolder} content folder`
+      );
       return next();
     }
-  }
-  if (stats && stats.isDirectory()) {
-    view = await renderDirectory(absolutePath);
-  }
-  if (stats && stats.isFile()) {
-    view = await renderContentFile(absolutePath, null, pipeline);
-  }
-  return res.end(view);
+    if (stats && stats.isDirectory()) {
+      view = await renderDirectory(absolutePath);
+    }
+    if (stats && stats.isFile()) {
+      if (absolutePath.indexOf(".html") !== -1) {
+        absolutePath = absolutePath.split(".html").join(".md");
+      }
+      absolutePath = path.resolve(
+        vayuConfig.contentFolder,
+        path.relative(vayuConfig.dest, absolutePath)
+      );
+      view = await renderContentFile(absolutePath, vayuConfig);
+    }
+    return res.end(view);
+  };
+  return devServeHandler;
 };
 
 const renderDirectory = async (absoluteDirPath) => {
@@ -82,13 +92,13 @@ const renderDirectory = async (absoluteDirPath) => {
           return {
             name: file,
             type: "folder",
-            href: `${path.relative(cwd, absoluteChildPath)}`,
+            href: `/${path.relative(cwd, absoluteChildPath)}`,
           };
         }
         return {
           name: file,
           type: "file",
-          href: `${path.relative(cwd, absoluteChildPath)}`,
+          href: `/${path.relative(cwd, absoluteChildPath)}`,
         };
       })
   );

@@ -3,7 +3,7 @@ import path from "path";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import log from "./logging.js";
-import { startApp, startBuilding } from "./main.js";
+import { startApp, startBuilding } from "./content";
 import startDevServer from "./dev";
 import Log from "./logging.js";
 
@@ -49,7 +49,7 @@ yargs(hideBin(process.argv))
         Log.verbose("No config file present for Vayu");
         vayuConfig = {};
       }
-      startBuilding(vayuConfig);
+      startBuilding(vayuConfig.default);
     }
   )
   .option("verbose", {
@@ -61,11 +61,20 @@ yargs(hideBin(process.argv))
     "dev",
     "Live build your website",
     () => {},
-    (argv) => {
+    async (argv) => {
       if (argv.verbose) {
         log.verboseMode = true;
       }
       process.env["NODE_ENV"] = "development";
-      startDevServer();
+      let vayuConfig = {};
+      try {
+        vayuConfig = await import(
+          path.resolve(process.cwd(), "vayu.config.js")
+        );
+      } catch (error) {
+        Log.verbose("No config file present for Vayu");
+        vayuConfig = {};
+      }
+      startDevServer(vayuConfig.default);
     }
   ).argv;
