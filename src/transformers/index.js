@@ -11,13 +11,18 @@ const compilers = {
 
 export async function compile(filePath, data) {
   var ext = path.extname(filePath).replace(/^\./, "");
-  Log.verbose(`Processing ${ext} file: ${filePath}`);
-  const startTime = process.hrtime();
-  const response = await compilers[ext].compile(filePath, data);
-  Log.verbose(
-    `${ext} file processed in ${ConvertHrtime(process.hrtime(startTime))} s`
-  );
-  return response;
+  try {
+    Log.verbose(`Processing ${ext} file: ${filePath}`);
+    const startTime = process.hrtime();
+    const response = await compilers[ext].compile(filePath, data);
+    Log.verbose(
+      `${ext} file processed in ${ConvertHrtime(process.hrtime(startTime))} s`
+    );
+    return response;
+  } catch (error) {
+    Log.error(`Compilation failed for ${filePath}`);
+    Log.error(error);
+  }
 }
 
 export default { compile };

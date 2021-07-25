@@ -72,6 +72,10 @@ export async function renderContentFile(contentFile, vayuConfig) {
   Log.verbose(`Rendering file ${contentFile}`);
   const props = await transformer.compile(contentFile);
 
+  if (props.data.abstract) {
+    return;
+  }
+
   // In case there is no layout in content then use the default view shipped in here.
   if (!props.data.layout) {
     Log.warn(

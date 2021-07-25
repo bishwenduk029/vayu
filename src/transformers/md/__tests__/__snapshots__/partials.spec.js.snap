@@ -1,0 +1,95 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should parse aggregations correctly 1`] = `
+Object {
+  "content": "",
+  "data": Object {
+    "aggregator": Object {
+      "Getting Started": Array [
+        Object {
+          "key": "section10",
+          "key1": "value1",
+          "key2": "value2",
+        },
+        Object {
+          "key": "section9",
+          "key1": "value1",
+          "key2": "value2",
+        },
+      ],
+    },
+    "key1": "value1",
+    "key2": "value2",
+    "partials": Array [
+      "section2.md",
+      "section3.md",
+    ],
+    "section2": Object {
+      "content": "",
+      "data": Object {
+        "abstract": true,
+        "key": "section2",
+        "key1": "value1",
+        "key2": "value2",
+      },
+    },
+    "section3": Object {
+      "content": "",
+      "data": Object {
+        "abstract": true,
+        "key": "section3",
+        "key1": "value1",
+        "key2": "value2",
+        "section4": "./section4.md",
+      },
+    },
+  },
+}
+`;
+
+exports[`should parse partials together into a single object graph 1`] = `
+Object {
+  "content": "",
+  "data": Object {
+    "key1": "value1",
+    "key2": "value2",
+    "partials": Array [
+      "section2.md",
+      "section3.md",
+    ],
+    "section2": Object {
+      "content": "",
+      "data": Object {
+        "abstract": true,
+        "key": "section2",
+        "key1": "value1",
+        "key2": "value2",
+      },
+    },
+    "section3": Object {
+      "content": "",
+      "data": Object {
+        "abstract": true,
+        "key": "section3",
+        "key1": "value1",
+        "key2": "value2",
+        "section4": "./section4.md",
+      },
+    },
+  },
+}
+`;
+
+exports[`should parse simple markdowns without collections correctly 1`] = `
+Object {
+  "content": "",
+  "data": Object {
+    "key1": "value1",
+    "key2": "value2",
+  },
+}
+`;
+
+exports[`should throw an error if the partial does not exist 1`] = `[Error: ENOENT: no such file or directory, open '/Users/kundb/project/vayu/src/transformers/md/__tests__/fixtures/section99.md']`;
+
+exports[`should throw an error if the partial is not having any key 1`] = `[Error: FrontMatter of the file /Users/kundb/project/vayu/src/transformers/md/__tests__/fixtures/section5.md has a syntax error. If it is an abstract/partial content file then it should have a key]`;
