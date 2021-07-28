@@ -46,7 +46,9 @@ yargs(hideBin(process.argv))
           path.resolve(process.cwd(), "vayu.config.js")
         );
       } catch (error) {
-        Log.verbose("No config file present for Vayu");
+        Log.verbose(
+          "No config file present for Vayu. Please check if you have provided type: module in package.json."
+        );
         vayuConfig = {};
       }
       startBuilding(vayuConfig.default);
@@ -72,7 +74,9 @@ yargs(hideBin(process.argv))
           path.resolve(process.cwd(), "vayu.config.js")
         );
       } catch (error) {
-        Log.verbose("No config file present for Vayu");
+        Log.verbose(
+          "No config file present for Vayu. Please check if you have provided type: module in package.json."
+        );
         vayuConfig = {};
       }
       startDevServer(vayuConfig.default);

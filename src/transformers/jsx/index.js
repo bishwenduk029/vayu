@@ -45,7 +45,7 @@ export async function dynamicImport(layoutFile) {
 
 export async function renderView(app, data) {
   const element = React.createElement(app, data);
-  const response = await ReactDOMServer.renderToString(element);
+  const response = await ReactDOMServer.renderToStaticMarkup(element);
   return response;
 }
 

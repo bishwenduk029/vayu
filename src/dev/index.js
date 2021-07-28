@@ -9,14 +9,28 @@ import { renderView } from "../transformers/jsx";
 import DevPage from "../layout/devPage";
 import url from "fast-url-parser";
 
+const mime = {
+  html: "text/html",
+  txt: "text/plain",
+  css: "text/css",
+  gif: "image/gif",
+  jpg: "image/jpeg",
+  png: "image/png",
+  svg: "image/svg+xml",
+  js: "application/javascript",
+};
+
 const VAYU_DEV_SERVER = "VAYU_DEV_SERVER";
 
 const dev = async (vayuConfig) => {
   const browsersync = BS.create(VAYU_DEV_SERVER);
   browsersync
-    .watch(["**/*.jsx", "**/*.md"], {
-      ignored: ["node_modules", /(^|[\/\\])\../],
-    })
+    .watch(
+      [`${vayuConfig.theme}/**/*.jsx`, `${vayuConfig.contentFolder}/**/*.md`],
+      {
+        ignored: ["node_modules", /(^|[\/\\])\../],
+      }
+    )
     .on("change", async (file) => {
       Log.info(`File change detected for ${file}`);
       browsersync.reload();
@@ -48,7 +62,10 @@ const devServeHandlerBuilder = async (vayuConfig) => {
     let normalizePathName = normalizeUrlPath(
       decodeURIComponent(url.parse(req.url).pathname)
     );
-    let absolutePath = path.resolve(process.cwd(), normalizePathName);
+    let absolutePath = path.resolve(
+      vayuConfig.contentFolder,
+      normalizePathName
+    );
     try {
       Log.verbose(`Rendering in dev mode file: ${absolutePath}`);
       stats = await fs.lstat(absolutePath);
@@ -59,26 +76,37 @@ const devServeHandlerBuilder = async (vayuConfig) => {
       return next();
     }
     if (stats && stats.isDirectory()) {
-      view = await renderDirectory(absolutePath);
+      view = await renderDirectory(absolutePath, vayuConfig.contentFolder);
+      return res.end(view);
     }
+
     if (stats && stats.isFile()) {
       if (absolutePath.indexOf(".html") !== -1) {
         absolutePath = absolutePath.split(".html").join(".md");
       }
-      absolutePath = path.resolve(
-        vayuConfig.contentFolder,
-        path.relative(vayuConfig.dest, absolutePath)
-      );
-      view = await renderContentFile(absolutePath, vayuConfig);
+      if (absolutePath.indexOf(".md") >= 0) {
+        view = await renderContentFile(absolutePath, vayuConfig);
+        return res.end(view);
+      }
     }
-    return res.end(view);
+
+    var type = mime[path.extname(absolutePath).slice(1)] || "text/plain";
+    var s = fs.createReadStream(absolutePath);
+    s.on("open", function () {
+      res.setHeader("Content-Type", type);
+      s.pipe(res);
+    });
+    s.on("error", function () {
+      res.setHeader("Content-Type", "text/plain");
+      res.statusCode = 404;
+      res.end("Not found");
+    });
   };
   return devServeHandler;
 };
 
-const renderDirectory = async (absoluteDirPath) => {
+const renderDirectory = async (absoluteDirPath, cwd) => {
   const dirs = await fs.readdir(absoluteDirPath);
-  const cwd = process.cwd();
   const displayFiles = await Promise.all(
     dirs
       .filter(

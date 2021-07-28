@@ -1,10 +1,10 @@
 {
-  "name": "layout",
+  "name": "vayu-tailwindcss",
   "version": "1.0.0",
   "main": "index.js",
-  "type": "module",
   "author": "bishwenduk029",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
