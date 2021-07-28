@@ -36,6 +36,7 @@
     "babel-jest": "^27.0.6",
     "bili": "^5.0.5",
     "jest": "^27.0.6",
-    "jest-esm-transformer": "^1.0.0"
+    "jest-esm-transformer": "^1.0.0",
+    "onchange": "^7.1.0"
   }
 }
