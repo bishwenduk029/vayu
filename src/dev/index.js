@@ -6,7 +6,7 @@ import path from "path";
 import { renderContentFile } from "../content/handler";
 import { setupVayuConfig, startBuilding } from "../content";
 import { renderView } from "../transformers/jsx";
-import DevPage from "../layout/devPage";
+import DevPage from "../layout/ui/devPage";
 import url from "fast-url-parser";
 
 const mime = {

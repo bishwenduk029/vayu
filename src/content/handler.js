@@ -3,7 +3,7 @@ import { getContent } from "./resolver.js";
 import Log from "../logging.js";
 import { ConvertHrtime } from "../utils/helper.js";
 import path from "path";
-import DefaultApp from "../layout/main";
+import DefaultApp from "../layout/ui/main";
 import transformer from "../transformers";
 import { renderView } from "../transformers/jsx";
 import findFiles from "../finders/index.js";

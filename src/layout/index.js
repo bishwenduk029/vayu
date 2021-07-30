@@ -116,7 +116,11 @@ export async function getLayoutFile(contentFilePath, frontMatter, vayuConfig) {
     return path.resolve(vayuConfig.theme, frontMatter.layout);
   }
 
-  if (pathExists(path.join(vayuConfig.theme, "[index].jsx"))) {
+  const isSingleLayoutFile = await pathExists(
+    path.join(vayuConfig.theme, "[index].jsx")
+  );
+
+  if (isSingleLayoutFile) {
     return path.join(vayuConfig.theme, "[index].jsx");
   }
 
