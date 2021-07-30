@@ -32,15 +32,10 @@ export async function dynamicImport(layoutFile) {
     }
   }
 
-  try {
-    const transformedCode = await bundleJSX(absPathForLayout);
-    const module = requireFromString(transformedCode);
-    TEMPLATE_CACHE.set(absPathForLayout, module.default);
-    return module.default;
-  } catch (err) {
-    Log.error("Parsing the jsx failed");
-    console.error(err);
-  }
+  const transformedCode = await bundleJSX(absPathForLayout);
+  const module = requireFromString(transformedCode);
+  TEMPLATE_CACHE.set(absPathForLayout, module.default);
+  return module.default;
 }
 
 export async function renderView(app, data) {
@@ -51,6 +46,9 @@ export async function renderView(app, data) {
 
 export async function compile(fileName, data) {
   const App = await dynamicImport(fileName);
+  if (!App) {
+    return null;
+  }
   const view = await renderView(App, data);
   return view;
 }

@@ -7,6 +7,7 @@ import DefaultApp from "../layout/main";
 import transformer from "../transformers";
 import { renderView } from "../transformers/jsx";
 import findFiles from "../finders/index.js";
+import { getLayoutFile } from "../layout/index.js";
 
 export const findContentFiles = async (pattern, contentFolder) => {
   Log.verbose(`Looking for pattern ${pattern} in ${contentFolder}`);
@@ -70,31 +71,23 @@ export async function buildStaticPages(vayuConfig) {
 
 export async function renderContentFile(contentFile, vayuConfig) {
   Log.verbose(`Rendering file ${contentFile}`);
-  const props = await transformer.compile(contentFile);
+  const props = await transformer.compile(contentFile, null, vayuConfig);
+
+  if (!props) {
+    return null;
+  }
 
   if (props.data.abstract) {
     return;
   }
 
-  // In case there is no layout in content then use the default view shipped in here.
-  if (!props.data.layout) {
-    Log.warn(
-      "Oops could not find layout in content to render with, so using default"
+  if (vayuConfig.theme) {
+    const absoluteLayoutFile = await getLayoutFile(
+      contentFile,
+      props.data,
+      vayuConfig
     );
-
-    if (vayuConfig.theme) {
-      const view = await transformer.compile(
-        path.join(vayuConfig.theme, "index.jsx"),
-        props
-      );
-      await serializeViewToFile(view, contentFile, vayuConfig);
-      if (process.env.NODE_ENV === "development") {
-        return view;
-      }
-      return;
-    }
-
-    const view = await renderView(DefaultApp, props);
+    const view = await transformer.compile(absoluteLayoutFile, props);
     await serializeViewToFile(view, contentFile, vayuConfig);
     if (process.env.NODE_ENV === "development") {
       return view;
@@ -102,11 +95,7 @@ export async function renderContentFile(contentFile, vayuConfig) {
     return;
   }
 
-  // Use the content specific layout for rendering the views.
-  const view = await transformer.compile(
-    path.join(vayuConfig.theme, props.data.layout),
-    props
-  );
+  const view = await renderView(DefaultApp, props);
   await serializeViewToFile(view, contentFile, vayuConfig);
   if (process.env.NODE_ENV === "development") {
     return view;

@@ -9,12 +9,15 @@ const compilers = {
   md: mdCompiler,
 };
 
-export async function compile(filePath, data) {
+export async function compile(filePath, data, vayuConfig) {
   var ext = path.extname(filePath).replace(/^\./, "");
   try {
     Log.verbose(`Processing ${ext} file: ${filePath}`);
     const startTime = process.hrtime();
-    const response = await compilers[ext].compile(filePath, data);
+    const response = await compilers[ext].compile(filePath, data, vayuConfig);
+    if (!response) {
+      return null;
+    }
     Log.verbose(
       `${ext} file processed in ${ConvertHrtime(process.hrtime(startTime))} s`
     );
@@ -22,6 +25,7 @@ export async function compile(filePath, data) {
   } catch (error) {
     Log.error(`Compilation failed for ${filePath}`);
     Log.error(error);
+    return null;
   }
 }
 

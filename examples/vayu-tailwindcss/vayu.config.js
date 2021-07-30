@@ -1,5 +1,5 @@
 const config = {
-  contentFolder: "/Users/kundb/src/master/prpc-platform/docs",
+  contentFolder: "./content",
   theme: "./layout",
   dest: "./public",
 };

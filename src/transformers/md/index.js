@@ -6,7 +6,7 @@ import findFiles from "../../finders";
 
 const CONTENT_CACHE = new Map();
 
-export async function compile(fileName, vayuConfig) {
+export async function compile(fileName, data, vayuConfig) {
   const mainFileParsed = await parseMarkdown(fileName, vayuConfig);
   let response = mainFileParsed;
   let parsedPartials = {};
