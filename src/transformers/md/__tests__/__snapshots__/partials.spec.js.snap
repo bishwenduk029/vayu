@@ -7,14 +7,20 @@ Object {
     "aggregator": Object {
       "Getting Started": Array [
         Object {
-          "key": "section10",
-          "key1": "value1",
-          "key2": "value2",
+          "content": "",
+          "data": Object {
+            "key": "section10",
+            "key1": "value1",
+            "key2": "value2",
+          },
         },
         Object {
-          "key": "section9",
-          "key1": "value1",
-          "key2": "value2",
+          "content": "",
+          "data": Object {
+            "key": "section9",
+            "key1": "value1",
+            "key2": "value2",
+          },
         },
       ],
     },

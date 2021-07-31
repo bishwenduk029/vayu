@@ -1,3 +1,4 @@
+![experimental](https://raster.shields.io/badge/status-experimental-red.png)
 ![alt text](vayu.png "Vayu")
 
 A minimal, fast and content first static site generator with support for multiple templates like JSX, PUG etc.

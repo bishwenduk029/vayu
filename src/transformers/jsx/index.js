@@ -1,9 +1,9 @@
 import path from "path";
 import React from "react";
 import ReactDOMServer from "react-dom/server.node.js";
+import Html from "../../layout/ui/html";
 import { build } from "esbuild";
 import { requireFromString } from "module-from-string";
-import Log from "../../logging";
 
 const TEMPLATE_CACHE = new Map();
 
@@ -40,8 +40,10 @@ export async function dynamicImport(layoutFile) {
 
 export async function renderView(app, data) {
   const element = React.createElement(app, data);
-  const response = await ReactDOMServer.renderToStaticMarkup(element);
-  return response;
+  const response = await ReactDOMServer.renderToStaticMarkup(
+    React.createElement(Html, {}, element)
+  );
+  return "<!DOCTYPE html>" + response;
 }
 
 export async function compile(fileName, data) {

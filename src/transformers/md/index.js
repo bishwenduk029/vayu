@@ -92,8 +92,8 @@ async function resolveAggregation(aggregate, vayuConfig) {
     mdFiles = await Promise.all(
       mdFiles.map(async (fileName) => {
         const contentWithFrontMatter = await fs.readFile(fileName, "utf-8");
-        const { data: frontMatter } = matter(contentWithFrontMatter);
-        return frontMatter;
+        const { data, content } = matter(contentWithFrontMatter);
+        return { data, content };
       })
     );
     return {
