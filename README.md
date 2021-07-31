@@ -1,4 +1,4 @@
-# Vayu 💨
+![alt text](vayu.png "Vayu")
 
 A minimal, fast and content first static site generator with support for multiple templates like JSX, PUG etc.
 Content is a first class citizen in Vayu. Everything starts with content. Even so that content is the starting point of any static site developed with Vayu like index.md(kind of like index.js in a JS project).

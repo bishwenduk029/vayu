@@ -31,7 +31,7 @@ const dev = async (vayuConfig) => {
         ignored: ["node_modules", /(^|[\/\\])\../],
       }
     )
-    .on("change", async (file) => {
+    .on("change", (file) => {
       Log.info(`File change detected for ${file}`);
       browsersync.reload();
     });
@@ -86,6 +86,7 @@ const devServeHandlerBuilder = async (vayuConfig) => {
       }
       if (absolutePath.indexOf(".md") >= 0) {
         view = await renderContentFile(absolutePath, vayuConfig);
+        res.setHeader("Content-Type", "text/html");
         return res.end(view);
       }
     }
