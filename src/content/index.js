@@ -11,6 +11,10 @@ const defaultVayuConfig = {
   dev: {
     port: 3000,
   },
+  seo: {
+    title: "Vayu Generated Docs",
+    description: "These documents have been generated using Vayu",
+  },
 };
 
 const buildPagesContext = async (directory, pattern) => {
@@ -79,6 +83,9 @@ export const setupVayuConfig = async (vayuConfig) => {
   vayuConfig.dest = sysPath.resolve(
     process.cwd(),
     vayuConfig.dest || `${vayuConfig.contentFolder}/public`
+  );
+  Log.verbose(
+    `The final config being used is: \n${JSON.stringify(vayuConfig)}`
   );
   return vayuConfig;
 };

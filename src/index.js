@@ -61,7 +61,7 @@ yargs(hideBin(process.argv))
   })
   .command(
     "dev",
-    "Live build your website",
+    "Develop Vayu site live",
     () => {},
     async (argv) => {
       if (argv.verbose) {

@@ -76,7 +76,7 @@ const devServeHandlerBuilder = async (vayuConfig) => {
       return next();
     }
     if (stats && stats.isDirectory()) {
-      view = await renderDirectory(absolutePath, vayuConfig.contentFolder);
+      view = await renderDirectory(absolutePath, vayuConfig);
       return res.end(view);
     }
 
@@ -106,7 +106,8 @@ const devServeHandlerBuilder = async (vayuConfig) => {
   return devServeHandler;
 };
 
-const renderDirectory = async (absoluteDirPath, cwd) => {
+const renderDirectory = async (absoluteDirPath, vayuConfig) => {
+  const cwd = vayuConfig.contentFolder;
   const dirs = await fs.readdir(absoluteDirPath);
   const displayFiles = await Promise.all(
     dirs
@@ -135,10 +136,14 @@ const renderDirectory = async (absoluteDirPath, cwd) => {
   //   path.join(process.cwd(), "layout/devPage.jsx"),
   //   { files: displayFiles }
   // );
-  const view = await renderView(DevPage, {
-    files: displayFiles,
-    directory: path.relative(process.cwd(), absoluteDirPath),
-  });
+  const view = await renderView(
+    DevPage,
+    {
+      files: displayFiles,
+      directory: path.relative(process.cwd(), absoluteDirPath),
+    },
+    vayuConfig
+  );
   return view;
 };
 export default dev;

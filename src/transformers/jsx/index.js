@@ -38,20 +38,21 @@ export async function dynamicImport(layoutFile) {
   return module.default;
 }
 
-export async function renderView(app, data) {
+export async function renderView(app, data, vayuConfig) {
   const element = React.createElement(app, data);
+  const { seo, htmlAttributes, bodyAttributes } = vayuConfig;
   const response = await ReactDOMServer.renderToStaticMarkup(
-    React.createElement(Html, {}, element)
+    React.createElement(Html, { seo, htmlAttributes, bodyAttributes }, element)
   );
   return "<!DOCTYPE html>" + response;
 }
 
-export async function compile(fileName, data) {
+export async function compile(fileName, data, vayuConfig) {
   const App = await dynamicImport(fileName);
   if (!App) {
     return null;
   }
-  const view = await renderView(App, data);
+  const view = await renderView(App, data, vayuConfig);
   return view;
 }
 

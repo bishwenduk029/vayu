@@ -11,9 +11,9 @@ const HTML = (props) => {
           content="width=device-width, initial-scale=1, shrink-to-fit=no"
         />
         {/* General tags */}
-        <title>{props.title}</title>
-        <meta name="description" content={props.description} />
-        <meta name="image" content={props.image} />
+        <title>{props.seo?.title}</title>
+        <meta name="description" content={props.seo?.description} />
+        <meta name="image" content={props.seo?.image} />
         <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
         <link
           rel="stylesheet"

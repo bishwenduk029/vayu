@@ -105,9 +105,15 @@ export async function deriveLayoutFileFromContentFile(
       return null;
     }
 
-    return path.resolve(vayuConfig.theme, resolvedPage?.page);
+    const layoutFile = path.resolve(vayuConfig.theme, resolvedPage?.page);
+    if (pathExists(layoutFile)) {
+      return layoutFile;
+    }
+
+    return null;
   } catch (e) {
     Log.error(e);
+    return null;
   }
 }
 
@@ -116,17 +122,34 @@ export async function getLayoutFile(contentFilePath, frontMatter, vayuConfig) {
     return path.resolve(vayuConfig.theme, frontMatter.layout);
   }
 
-  const isSingleLayoutFile = await pathExists(
-    path.join(vayuConfig.theme, "[index].jsx")
-  );
-
-  if (isSingleLayoutFile) {
-    return path.join(vayuConfig.theme, "[index].jsx");
-  }
-
-  const layoutFile = await deriveLayoutFileFromContentFile(
+  let layoutFile = await deriveLayoutFileFromContentFile(
     contentFilePath,
     vayuConfig
   );
+
+  if (!layoutFile) {
+    let pseudoContentFilePath = path.relative(
+      vayuConfig.contentFolder,
+      contentFilePath
+    );
+    while (pseudoContentFilePath.length) {
+      let { dir, name, ext } = path.parse(pseudoContentFilePath);
+      let dirs = dir.split("/");
+      pseudoContentFilePath = dirs.slice(0, dirs.length - 1).join("/");
+
+      Log.verbose(`Looking for pseudo path ${pseudoContentFilePath}`);
+
+      if (pseudoContentFilePath.length === 0) break;
+
+      pseudoContentFilePath = path.join(pseudoContentFilePath, `${name}${ext}`);
+
+      layoutFile = await deriveLayoutFileFromContentFile(
+        path.resolve(vayuConfig.contentFolder, pseudoContentFilePath),
+        vayuConfig
+      );
+      if (layoutFile) break;
+    }
+  }
+
   return layoutFile;
 }

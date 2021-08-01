@@ -10,6 +10,9 @@ const compilers = {
 };
 
 export async function compile(filePath, data, vayuConfig) {
+  if (!filePath) {
+    return null;
+  }
   var ext = path.extname(filePath).replace(/^\./, "");
   try {
     Log.verbose(`Processing ${ext} file: ${filePath}`);

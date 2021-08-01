@@ -8,6 +8,7 @@ import transformer from "../transformers";
 import { renderView } from "../transformers/jsx";
 import findFiles from "../finders/index.js";
 import { getLayoutFile } from "../layout/index.js";
+import pMap from "p-map";
 
 export const findContentFiles = async (pattern, contentFolder) => {
   Log.verbose(`Looking for pattern ${pattern} in ${contentFolder}`);
@@ -59,11 +60,11 @@ export async function buildStaticPages(vayuConfig) {
     );
   }
 
-  await Promise.all(
-    contentFiles.map(async (contentFile) => {
-      await renderContentFile(contentFile, vayuConfig);
-    })
-  );
+  const mapper = async (contentFile) => {
+    await renderContentFile(contentFile, vayuConfig);
+  };
+
+  await pMap(contentFiles, mapper, { concurrency: 25 });
   Log.info(
     `Web site rendered in ${ConvertHrtime(process.hrtime(startTime))} s`
   );
@@ -77,17 +78,17 @@ export async function renderContentFile(contentFile, vayuConfig) {
     return null;
   }
 
-  if (props.data.abstract) {
-    return;
-  }
-
   if (vayuConfig.theme) {
     const absoluteLayoutFile = await getLayoutFile(
       contentFile,
       props.data,
       vayuConfig
     );
-    const view = await transformer.compile(absoluteLayoutFile, props);
+    const view = await transformer.compile(
+      absoluteLayoutFile,
+      props,
+      vayuConfig
+    );
     await serializeViewToFile(view, contentFile, vayuConfig);
     if (process.env.NODE_ENV === "development") {
       return view;
@@ -95,7 +96,7 @@ export async function renderContentFile(contentFile, vayuConfig) {
     return;
   }
 
-  const view = await renderView(DefaultApp, props);
+  const view = await renderView(DefaultApp, props, vayuConfig);
   await serializeViewToFile(view, contentFile, vayuConfig);
   if (process.env.NODE_ENV === "development") {
     return view;
@@ -104,6 +105,9 @@ export async function renderContentFile(contentFile, vayuConfig) {
 }
 
 export async function serializeViewToFile(view, sourceContentFile, vayuConfig) {
+  if (!view) {
+    return;
+  }
   const contentFileRelativePath = path.relative(
     vayuConfig.contentFolder,
     sourceContentFile

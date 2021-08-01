@@ -33,7 +33,6 @@ Object {
     "section2": Object {
       "content": "",
       "data": Object {
-        "abstract": true,
         "key": "section2",
         "key1": "value1",
         "key2": "value2",
@@ -42,7 +41,6 @@ Object {
     "section3": Object {
       "content": "",
       "data": Object {
-        "abstract": true,
         "key": "section3",
         "key1": "value1",
         "key2": "value2",
@@ -66,7 +64,6 @@ Object {
     "section2": Object {
       "content": "",
       "data": Object {
-        "abstract": true,
         "key": "section2",
         "key1": "value1",
         "key2": "value2",
@@ -75,7 +72,6 @@ Object {
     "section3": Object {
       "content": "",
       "data": Object {
-        "abstract": true,
         "key": "section3",
         "key1": "value1",
         "key2": "value2",
